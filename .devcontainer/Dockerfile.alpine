@@ -1,0 +1,81 @@
+FROM alpine:latest
+
+# Install base packages
+RUN apk add --no-cache \
+    sqlite \
+    curl \
+    gnupg \
+    git \
+    bash-completion \
+    build-base \
+    ca-certificates \
+    wget \
+    micro \
+    unzip \
+    zsh \
+    zsh-autosuggestions \
+    zsh-syntax-highlighting
+
+# install rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# install zig with apk
+RUN apk add --no-cache zig
+
+# install clang
+RUN apk add --no-cache clang
+
+# install python 3
+RUN apk add --no-cache python3 py3-pip
+
+# install sshd
+RUN apk add --no-cache openssh
+
+# Install Node.js and npm
+RUN apk add --update nodejs npm &&\
+    npm install -g npm@latest && \
+    npm install -g create-next-app create-react-app @angular/cli
+
+# Install Starship prompt
+RUN sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- -y
+
+# Create zsh plugins directory and install plugins
+RUN mkdir -p /root/.zsh/plugins && \
+    git clone https://github.com/zsh-users/zsh-autosuggestions /root/.zsh/plugins/zsh-autosuggestions && \
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /root/.zsh/plugins/zsh-syntax-highlighting
+
+# Configure zsh environment
+RUN { \
+    echo 'autoload -U compinit && compinit'; \
+    echo 'source /root/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh'; \
+    echo 'source /root/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh'; \
+    echo 'eval "$(starship init zsh)"'; \
+    echo 'export HISTFILE=~/.zsh_history'; \
+    echo 'export HISTSIZE=10000'; \
+    echo 'export SAVEHIST=10000'; \
+    echo 'setopt appendhistory'; \
+    } > /root/.zshrc
+
+# Configure bash environment
+RUN { \
+    echo 'if [ -f /etc/bash_completion ]; then'; \
+    echo '    . /etc/bash_completion'; \
+    echo 'fi'; \
+    echo 'eval "$(starship init bash)"'; \
+    } >> /root/.bashrc
+
+# Configure starship with preset
+RUN mkdir -p /root/.config
+COPY starship.toml /root/.config/starship.toml
+
+# Set zsh as default shell
+RUN which chsh > /dev/null && chsh -s /bin/zsh || true
+
+# Install dependencies for Ruby and Homebrew
+RUN git clone https://github.com/Homebrew/brew /home/linuxbrew/.linuxbrew/Homebrew && \
+    mkdir /home/linuxbrew/.linuxbrew/bin && \
+    ln -s /home/linuxbrew/.linuxbrew/Homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/brew && \
+    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /root/.bashrc && \
+    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /root/.zshrc && \
+    bash -c "source /root/.bashrc" && \
+    zsh -c "source /root/.zshrc"

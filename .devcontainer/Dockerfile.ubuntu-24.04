@@ -1,0 +1,81 @@
+FROM ubuntu:24.04
+
+# Install base packages
+RUN apt-get update && apt-get install -y \
+    sqlite3 \
+    curl \
+    gnupg \
+    git \
+    bash-completion \
+    build-essential \
+    ca-certificates \
+    wget \
+    micro \
+    unzip \
+    bat \
+    zsh \
+    zsh-autosuggestions \
+    zsh-syntax-highlighting \
+    && rm -rf /var/lib/apt/lists/*
+
+# install rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# install clang
+RUN apt-get update && apt-get install -y clang
+
+# install python 3
+RUN apt-get update && apt-get install -y python3 python3-pip
+
+# install sshd
+RUN apt-get update && apt-get install -y openssh-server
+
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_23.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g npm@latest && \
+    npm install -g create-next-app create-react-app @angular/cli
+
+# Install Starship prompt
+RUN sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- -y
+
+# Create zsh plugins directory and install plugins
+RUN mkdir -p /root/.zsh/plugins && \
+    git clone https://github.com/zsh-users/zsh-autosuggestions /root/.zsh/plugins/zsh-autosuggestions && \
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /root/.zsh/plugins/zsh-syntax-highlighting
+
+# Configure zsh environment
+RUN { \
+    echo 'autoload -U compinit && compinit'; \
+    echo 'source /root/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh'; \
+    echo 'source /root/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh'; \
+    echo 'eval "$(starship init zsh)"'; \
+    echo 'export HISTFILE=~/.zsh_history'; \
+    echo 'export HISTSIZE=10000'; \
+    echo 'export SAVEHIST=10000'; \
+    echo 'setopt appendhistory'; \
+    } > /root/.zshrc
+
+# Configure bash environment
+RUN { \
+    echo 'if [ -f /etc/bash_completion ]; then'; \
+    echo '    . /etc/bash_completion'; \
+    echo 'fi'; \
+    echo 'eval "$(starship init bash)"'; \
+    } >> /root/.bashrc
+
+# Configure starship with preset
+RUN mkdir -p /root/.config
+COPY starship.toml /root/.config/starship.toml
+
+# Set zsh as default shell
+RUN chsh -s /bin/zsh
+
+# Install Homebrew
+RUN apt-get update && \
+    apt-get install -y build-essential curl file git && \
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
+    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /root/.bashrc && \
+    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /root/.zshrc && \
+    /bin/bash -c "source /root/.bashrc" && \
+    /bin/zsh -c "source /root/.zshrc"
