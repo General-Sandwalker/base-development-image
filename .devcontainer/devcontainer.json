@@ -1,6 +1,6 @@
 {
     "name": "base-development-image",
-    "image": "ghcr.io/general-sandwalker/basedevelopmentimage:ubuntu-25.04",
+    "image": "ghcr.io/general-sandwalker/basedevelopmentimage:latest",
     "workspaceFolder": "/workspaces/",
     "remoteUser": "root",
     "mounts": [
