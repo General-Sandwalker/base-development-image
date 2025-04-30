@@ -36,6 +36,26 @@ RUN curl -fsSL https://deb.nodesource.com/setup_23.x | bash - && \
     npm install -g npm@latest && \
     npm install -g create-next-app create-react-app @angular/cli
 
+
+# install openJDK 21
+RUN apt-get update && apt-get install -y openjdk-21-jdk
+
+# install maven
+RUN apt-get update && apt-get install -y maven
+
+# install gradle
+RUN apt-get update && apt-get install -y gradle
+
+# install Docker & docker-compose
+RUN apt-get update && apt-get install -y docker.io docker-compose
+
+# mount host docker socket
+RUN mkdir -p /var/run/docker.sock && \
+    mount -o bind /var/run/docker.sock /var/run/docker.sock
+
+# Install bat
+RUN apt-get update && apt-get install -y bat
+
 # Install Starship prompt
 RUN sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- -y
 

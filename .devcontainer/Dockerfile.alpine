@@ -31,6 +31,23 @@ RUN apk add --no-cache python3 py3-pip
 # install sshd
 RUN apk add --no-cache openssh
 
+# install openJDK 21
+RUN apk add --no-cache openjdk21
+# install maven
+RUN apk add --no-cache maven
+# install gradle
+RUN apk add --no-cache gradle
+
+# install Docker & docker-compose
+RUN apk add --no-cache docker-cli docker-compose
+
+# mount host docker socket
+RUN mkdir -p /var/run/docker.sock && \
+    mount -o bind /var/run/docker.sock /var/run/docker.sock
+
+# Install bat
+RUN apk add --no-cache bat
+
 # Install Node.js and npm
 RUN apk add --update nodejs npm &&\
     npm install -g npm@latest && \
