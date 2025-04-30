@@ -41,10 +41,6 @@ RUN apk add --no-cache gradle
 # install Docker & docker-compose
 RUN apk add --no-cache docker-cli docker-compose
 
-# mount host docker socket
-RUN mkdir -p /var/run/docker.sock && \
-    mount -o bind /var/run/docker.sock /var/run/docker.sock
-
 # Install bat
 RUN apk add --no-cache bat
 
