@@ -47,10 +47,6 @@ RUN apt-get update && apt-get install -y gradle
 # install Docker & docker-compose
 RUN apt-get update && apt-get install -y docker.io docker-compose
 
-# mount host docker socket
-RUN mkdir -p /var/run/docker.sock && \
-    mount -o bind /var/run/docker.sock /var/run/docker.sock
-
 # Install bat
 RUN apt-get update && apt-get install -y bat
 # Install Starship prompt
